@@ -20,7 +20,11 @@ public class Binlog2sqlEventSink extends AbstractCanalLifeCycle implements Canal
     private final static Logger logger = LoggerFactory.getLogger(Binlog2sqlEventSink.class);
     private List<String> sqlList = Lists.newArrayList();
 
-    private List<EventHandler> handlers = Lists.newArrayList();
+    private EventHandler eventHandler;
+
+    public Binlog2sqlEventSink(EventHandler eventHandler) {
+        this.eventHandler = eventHandler;
+    }
 
     @Override
     public boolean sink(List<CanalEntry.Entry> entrys, InetSocketAddress remoteAddress, String destination) throws CanalSinkException, InterruptedException {
@@ -41,12 +45,11 @@ public class Binlog2sqlEventSink extends AbstractCanalLifeCycle implements Canal
                             entry.getHeader().getTableName(),
                             eventType));
 
-                    handlers.forEach(handler -> {
-                        String sql = handler.handle(entry, rowChage);
-                        if (!Strings.isNullOrEmpty(sql)) {
-                            sqlList.add(sql);
-                        }
-                    });
+
+                    String sql = eventHandler.handle(entry, rowChage);
+                    if (!Strings.isNullOrEmpty(sql)) {
+                        sqlList.add(sql);
+                    }
                 } catch (Exception e) {
                     logger.error(e.getMessage(), e);
                 }
@@ -57,23 +60,13 @@ public class Binlog2sqlEventSink extends AbstractCanalLifeCycle implements Canal
         return true;
     }
 
-
-    private void print(List<CanalEntry.Column> columns) {
-        for (CanalEntry.Column column : columns) {
-            logger.info(column.getName() + " : " + column.getValue() + "    update=" + column.getUpdated());
-        }
-    }
-
     @Override
     public void interrupt() {
 
     }
 
-    public List<String> toSqlStr() {
+    public List<String> getSqlList() {
         return sqlList;
     }
 
-    public void addHandler(EventHandler handler) {
-        handlers.add(handler);
-    }
 }

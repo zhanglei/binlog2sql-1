@@ -6,7 +6,7 @@ import com.alibaba.otter.canal.parse.support.AuthenticationInfo;
 import com.alibaba.otter.canal.protocol.position.EntryPosition;
 import com.alibaba.otter.canal.protocol.position.LogPosition;
 import com.google.common.collect.Maps;
-import com.zhizus.forest.binlog2sql.hanlder.InsertEventHandler;
+import com.zhizus.forest.binlog2sql.hanlder.SqlEventHandler;
 import org.junit.Assert;
 
 import java.net.InetSocketAddress;
@@ -30,9 +30,8 @@ public class Binlog2sqlTool {
         controller.setConnectionCharset(Charset.forName("UTF-8"));
         controller.setDirectory(directory);
         controller.setMasterPosition(startPosition);
-        Binlog2sqlEventSink eventSink = new Binlog2sqlEventSink();
-        InsertEventHandler handler = new InsertEventHandler();
-        eventSink.addHandler(handler);
+        SqlEventHandler handler = new SqlEventHandler();
+        Binlog2sqlEventSink eventSink = new Binlog2sqlEventSink(handler);
         controller.setEventSink(eventSink);
 
 
@@ -40,7 +39,6 @@ public class Binlog2sqlTool {
             public LogPosition getLatestIndexBy(String destination) {
                 return logPositionMap.get(destination);
             }
-
             public void persistLogPosition(String destination, LogPosition logPosition) throws CanalParseException {
                 System.out.println(logPosition);
                 logPositionMap.put(destination, logPosition);
@@ -55,7 +53,7 @@ public class Binlog2sqlTool {
             Assert.fail(e.getMessage());
         }
         controller.stop();
-        List<String> sqlStr = eventSink.toSqlStr();
+        List<String> sqlStr = eventSink.getSqlList();
         sqlStr.forEach(sql -> System.out.println(sql));
 
 

@@ -7,5 +7,5 @@ import com.alibaba.otter.canal.protocol.CanalEntry;
  */
 public interface EventHandler {
 
-    String handle(CanalEntry.Entry entry, CanalEntry.RowChange rowChage);
+    String handle(CanalEntry.Entry entry, CanalEntry.RowChange rowChange);
 }

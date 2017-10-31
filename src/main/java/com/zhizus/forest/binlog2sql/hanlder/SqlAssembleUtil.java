@@ -7,7 +7,7 @@ import java.util.List;
 /**
  * Created by dempezheng on 2017/10/31.
  */
-public class SqlEventHandlerUtils {
+public class SqlAssembleUtil {
 
 
     /**
@@ -26,23 +26,43 @@ public class SqlEventHandlerUtils {
                 List<CanalEntry.Column> afterColumnsList = rowData.getAfterColumnsList();
                 print(afterColumnsList);
                 for (int i = 0; i < afterColumnsList.size(); i++) {
-                    baseSql.append(afterColumnsList.get(i).getName());
-                    if (afterColumnsList.size() != i +1) {
+                    CanalEntry.Column column = afterColumnsList.get(i);
+                    if (column.getUpdated() != true) {
+                        continue;
+                    }
+                    baseSql.append(column.getName());
+                    if (afterColumnsList.size() != i + 1) {
                         baseSql.append(",");
                     }
-
                 }
                 baseSql.append(")").append(" VALUES (");
                 for (int i = 0; i < afterColumnsList.size(); i++) {
-                    baseSql.append(afterColumnsList.get(i).getValue());
-                    if (afterColumnsList.size() != i +1) {
+                    CanalEntry.Column column = afterColumnsList.get(i);
+                    if (column.getUpdated() != true) {
+                        continue;
+                    }
+                    baseSql.append(column.getValue());
+                    if (afterColumnsList.size() != i + 1) {
                         baseSql.append(",");
                     }
                 }
                 baseSql.append(")").append(";");
 
             case UPDATE:
+                baseSql.append("UPDATE  ").append(entry.getHeader().getTableName()).append(" set ");
+                List<CanalEntry.Column> afterUpdateColumnsList = rowData.getAfterColumnsList();
+                for (int i = 0; i < afterUpdateColumnsList.size(); i++) {
+                    CanalEntry.Column column = afterUpdateColumnsList.get(i);
+                    if (column.getUpdated() != true) {
+                        continue;
+                    }
+                    baseSql.append(column.getName()).append("=").append(column.getValue());
+                }
+                print(afterUpdateColumnsList);
+
             case ALTER:
+                List<CanalEntry.Column> afterAlertColumnsList = rowData.getAfterColumnsList();
+                print(afterAlertColumnsList);
             default:
                 break;
 
