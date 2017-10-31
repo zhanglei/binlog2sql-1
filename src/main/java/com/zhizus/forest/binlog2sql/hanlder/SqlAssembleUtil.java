@@ -2,6 +2,7 @@ package com.zhizus.forest.binlog2sql.hanlder;
 
 import com.alibaba.otter.canal.protocol.CanalEntry;
 import com.google.common.base.Strings;
+import org.apache.commons.lang.StringUtils;
 
 import java.util.List;
 
@@ -24,13 +25,15 @@ public class SqlAssembleUtil {
             case INSERT:
                 baseSql.append("INSERT INTO ").append(entry.getHeader().getTableName()).append(" (");
                 List<CanalEntry.Column> afterColumnsList = rowData.getAfterColumnsList();
+
                 print(afterColumnsList);
                 for (int i = 0; i < afterColumnsList.size(); i++) {
                     CanalEntry.Column column = afterColumnsList.get(i);
+                    System.out.println(">>>>>>>>>>" + column);
                     if (column.getUpdated() != true) {
                         continue;
                     }
-                    baseSql.append(column.getName());
+                    baseSql.append("'").append(column.getName()).append("'");
                     if (afterColumnsList.size() != i + 1) {
                         baseSql.append(",");
                     }
@@ -41,7 +44,7 @@ public class SqlAssembleUtil {
                     if (column.getUpdated() != true) {
                         continue;
                     }
-                    baseSql.append(column.getValue());
+                    baseSql.append(withValue(column));
                     if (afterColumnsList.size() != i + 1) {
                         baseSql.append(",");
                     }
@@ -59,7 +62,7 @@ public class SqlAssembleUtil {
                     if (column.getUpdated() != true) {
                         continue;
                     }
-                    baseSql.append(column.getName()).append("=").append(column.getValue());
+                    baseSql.append(column.getName()).append("=").append(withValue(column));
                 }
 
                 if (!Strings.isNullOrEmpty(whereCondition)) {
@@ -84,7 +87,7 @@ public class SqlAssembleUtil {
         StringBuilder whereCondition = new StringBuilder();
         for (int i = 0; i < beforeUpdateColumnsList.size(); i++) {
             CanalEntry.Column column = beforeUpdateColumnsList.get(i);
-            whereCondition.append(column.getName()).append("=").append(column.getValue());
+            whereCondition.append(column.getName()).append("=").append(withValue(column));
             if (beforeUpdateColumnsList.size() > 0 && beforeUpdateColumnsList.size() != i + 1) {
                 whereCondition.append(" AND ");
             }
@@ -93,6 +96,16 @@ public class SqlAssembleUtil {
             return " WHERE " + whereCondition.toString();
         }
         return "";
+    }
+
+    public static String withValue(CanalEntry.Column column) {
+        if (StringUtils.startsWith(column.getMysqlType(), "varchar")) {
+            return "'" + column.getValue() + "'";
+        } else if (StringUtils.startsWith(column.getMysqlType(), "bit")) {
+            return "'" + column.getValue() + "'";
+        } else {
+            return column.getValue();
+        }
     }
 
     public static String wrapEnd(String sql) {

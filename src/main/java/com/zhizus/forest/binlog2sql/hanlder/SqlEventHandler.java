@@ -9,10 +9,12 @@ public class SqlEventHandler implements EventHandler {
     @Override
     public String handle(CanalEntry.Entry entry, CanalEntry.RowChange rowChange) {
         String sql = "";
+        System.out.println("---->>" + entry);
         CanalEntry.EventType eventType = rowChange.getEventType();
         for (CanalEntry.RowData rowData : rowChange.getRowDatasList()) {
             return SqlAssembleUtil.assembleSql(eventType, entry, rowData);
         }
+
         return sql;
     }
 
