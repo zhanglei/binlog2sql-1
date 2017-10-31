@@ -34,7 +34,6 @@ public class Binlog2sqlTool {
         Binlog2sqlEventSink eventSink = new Binlog2sqlEventSink(handler);
         controller.setEventSink(eventSink);
 
-
         controller.setLogPositionManager(new AbstractLogPositionManager() {
             public LogPosition getLatestIndexBy(String destination) {
                 return logPositionMap.get(destination);
