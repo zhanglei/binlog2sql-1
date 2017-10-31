@@ -6,6 +6,7 @@ import com.google.common.base.Strings;
 import java.util.List;
 
 /**
+ * TODO 待解决sql 字符类型问题
  * Created by dempezheng on 2017/10/31.
  */
 public class SqlAssembleUtil {
